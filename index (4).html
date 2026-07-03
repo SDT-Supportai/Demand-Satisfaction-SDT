@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demand Satisfaction Center · Web Application Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0A1019;--ink-2:#0D1524;--panel:#111C30;--panel-2:#16233B;
+    --line:#22334D;--line-soft:#1A2842;
+    --blue:#5AB6DB;--blue-dim:#2E6F8A;--gold:#E3AE55;--gold-dim:#8A6A32;
+    --green:#63C08A;--green-dim:#356F52;
+    --text:#E7EEF7;--muted:#8DA0BC;--muted-2:#5E718F;
+    --font-d:'Space Grotesk',sans-serif;
+    --font-b:'IBM Plex Sans Thai','Space Grotesk',sans-serif;
+    --font-m:'IBM Plex Mono',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--ink);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body.lock{overflow:hidden}
+  body::before{content:"";position:fixed;inset:0;background-image:linear-gradient(var(--line-soft) 1px,transparent 1px),linear-gradient(90deg,var(--line-soft) 1px,transparent 1px);background-size:44px 44px;opacity:.3;mask-image:radial-gradient(ellipse 120% 85% at 50% 0%,#000 30%,transparent 84%);-webkit-mask-image:radial-gradient(ellipse 120% 85% at 50% 0%,#000 30%,transparent 84%);pointer-events:none;z-index:0}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 28px;position:relative;z-index:1}
+  .eyebrow{font-family:var(--font-m);font-size:11.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--blue);font-weight:500;display:inline-flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:26px;height:1px;background:var(--blue);opacity:.6}
+  h1,h2,h3,h4{font-family:var(--font-d);font-weight:600;line-height:1.08;letter-spacing:-.01em}
+
+  .topbar{position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);background:rgba(10,16,25,.8);border-bottom:1px solid var(--line-soft)}
+  .topbar .row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;gap:12px}
+  .brand{display:flex;align-items:center;gap:11px;font-family:var(--font-m);font-size:12px;letter-spacing:.03em;cursor:pointer}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px rgba(227,174,85,.15)}
+  .brand b{font-weight:600;color:var(--text)}
+  .navlinks{display:flex;gap:2px;flex-wrap:wrap}
+  .navlinks button{font-family:var(--font-m);font-size:10.5px;letter-spacing:.04em;color:var(--muted);background:transparent;border:1px solid transparent;padding:7px 11px;border-radius:7px;transition:.2s;text-transform:uppercase;cursor:pointer}
+  .navlinks button:hover{color:var(--text);background:var(--panel)}
+  .navlinks button.active{color:var(--gold);border-color:var(--gold-dim);background:rgba(227,174,85,.06)}
+  @media(max-width:900px){.navlinks button{font-size:9.5px;padding:6px 8px}}
+
+  .view{display:none}
+  .view.active{display:block;animation:fade .4s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .hero{padding:60px 0 48px}
+  .hero-grid{display:grid;grid-template-columns:1.02fr .98fr;gap:44px;align-items:center}
+  @media(max-width:920px){.hero-grid{grid-template-columns:1fr;gap:34px}}
+  .hero h1{font-size:clamp(32px,5.2vw,56px);margin:18px 0 0}
+  .hero h1 .g{color:var(--gold)}.hero h1 .b{color:var(--blue)}
+  .hero h1 .en{display:block;font-size:clamp(16px,2.3vw,26px);color:var(--muted);font-weight:500;margin-top:8px}
+  .hero .lead{margin-top:22px;max-width:50ch;color:var(--muted);font-size:14.5px}
+  .hero .lead b{color:var(--text)}
+  .hero .lead .mi{font-family:var(--font-d);font-style:italic;color:var(--text);font-size:14.5px;line-height:1.5}
+  .hero .lead .th{margin-top:11px;line-height:1.6}
+  .hero .lead .th b1{color:var(--gold);font-weight:600}.hero .lead .th b2{color:var(--blue);font-weight:600}.hero .lead .th b3{color:var(--green);font-weight:600}
+  .kpis{display:flex;gap:24px;margin-top:28px;flex-wrap:wrap}
+  .kpi{border-left:2px solid var(--gold-dim);padding-left:13px}
+  .kpi .n{font-family:var(--font-d);font-size:24px;font-weight:600}
+  .kpi .l{font-family:var(--font-m);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-2);margin-top:2px}
+
+  .ring-box{position:relative;display:flex;justify-content:center}
+  .ring-svg{width:100%;max-width:430px;height:auto;overflow:visible}
+  .ring-track{fill:none;stroke:var(--line);stroke-width:1}
+  .arc{fill:none;stroke-width:10;stroke-linecap:round;opacity:.92}
+  .arc.d{stroke:var(--gold)}.arc.o{stroke:var(--blue)}.arc.g{stroke:var(--green)}
+  .node{cursor:pointer;transition:r .2s}.node.d{fill:var(--gold)}.node.o{fill:var(--blue)}.node.g{fill:var(--green)}
+  .node:hover{r:5}.nhit{fill:transparent;cursor:pointer}
+  .pulse{fill:var(--gold);filter:drop-shadow(0 0 8px rgba(227,174,85,.9))}
+  @keyframes travel{to{transform:rotate(360deg)}}
+  .pulse-g{transform-origin:150px 150px;animation:travel 10s linear infinite}
+  .ring-lbl{font-family:var(--font-m);font-size:9.4px;letter-spacing:.15em;fill:var(--muted);text-transform:uppercase}
+  .ring-num{font-family:var(--font-m);font-size:8.4px;fill:var(--muted-2)}
+  .ring-c-t{font-family:var(--font-d);font-weight:600;fill:var(--text)}
+  .ring-c-s{font-family:var(--font-m);font-size:8.2px;letter-spacing:.14em;fill:var(--gold);text-transform:uppercase}
+  .feedback{fill:none;stroke:var(--gold);stroke-width:1.4;stroke-dasharray:3 4;opacity:.7}
+
+  .sec{padding:50px 0;border-top:1px solid var(--line-soft)}
+  .sec-head{text-align:center;margin-bottom:30px}
+  .sec-head h2{font-size:clamp(23px,3.2vw,34px);margin-top:10px}
+  .sec-head p{color:var(--muted);font-size:14px;max-width:72ch;margin:11px auto 0}
+  .sec-head p b{color:var(--gold)}
+
+  .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:start}
+  @media(max-width:940px){.pillars{grid-template-columns:1fr;max-width:580px;margin:0 auto}}
+  .pillar{border:1px solid var(--line);border-radius:16px;padding:20px 18px;background:linear-gradient(180deg,var(--ink-2),var(--ink));position:relative;overflow:hidden}
+  .pillar::before{content:"";position:absolute;top:0;left:0;right:0;height:3px}
+  .pillar.p1::before{background:linear-gradient(90deg,var(--gold),transparent)}
+  .pillar.p2::before{background:linear-gradient(90deg,var(--blue),transparent)}
+  .pillar.p3::before{background:linear-gradient(90deg,var(--green),transparent)}
+  .pil-head{margin-bottom:15px;padding-bottom:13px;border-bottom:1px solid var(--line-soft)}
+  .pil-k{font-family:var(--font-m);font-size:10px;letter-spacing:.18em;text-transform:uppercase}
+  .p1 .pil-k{color:var(--gold)}.p2 .pil-k{color:var(--blue)}.p3 .pil-k{color:var(--green)}
+  .pil-head h3{font-size:18px;margin:7px 0 5px}
+  .pil-head .thv{font-size:12.5px;color:var(--text);font-weight:500}
+  .pil-head p{font-size:12px;color:var(--muted);margin-top:5px}
+  .fn{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:15px;margin-bottom:11px;cursor:pointer;transition:transform .3s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .3s}
+  .fn:last-child{margin-bottom:0}
+  .fn:hover{transform:translateY(-3px);box-shadow:0 16px 34px -20px rgba(0,0,0,.7)}
+  .p1 .fn:hover{border-color:var(--gold-dim)}.p2 .fn:hover{border-color:var(--blue-dim)}.p3 .fn:hover{border-color:var(--green-dim)}
+  .fn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .fn-top{display:flex;align-items:baseline;gap:8px;margin-bottom:3px}
+  .fn-no{font-family:var(--font-m);font-size:11px;font-weight:600;flex-shrink:0}
+  .p1 .fn-no{color:var(--gold)}.p2 .fn-no{color:var(--blue)}.p3 .fn-no{color:var(--green)}
+  .fn h4{font-size:14.5px;line-height:1.25}
+  .fn .en{font-family:var(--font-m);font-size:10px;color:var(--muted-2);margin:2px 0 8px}
+  .fn .ms{font-size:12.4px;color:var(--muted);line-height:1.55}
+  .fn .more{margin-top:10px;font-family:var(--font-m);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:6px;opacity:.75;transition:.25s}
+  .p1 .fn .more{color:var(--gold)}.p2 .fn .more{color:var(--blue)}.p3 .fn .more{color:var(--green)}
+  .fn:hover .more{opacity:1;gap:9px}
+
+  .flow{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+  .fstep{flex:1;min-width:200px;border:1px solid var(--line);border-radius:13px;padding:17px;background:var(--ink-2);position:relative;overflow:hidden}
+  .fstep::before{content:"";position:absolute;top:0;left:0;right:0;height:3px}
+  .fstep.s1::before{background:var(--gold)}.fstep.s2::before{background:var(--blue)}.fstep.s3::before{background:var(--green)}
+  .fstep .fk{font-family:var(--font-m);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase}
+  .fstep.s1 .fk{color:var(--gold)}.fstep.s2 .fk{color:var(--blue)}.fstep.s3 .fk{color:var(--green)}
+  .fstep h4{font-size:16px;margin:6px 0 6px}.fstep p{font-size:12.3px;color:var(--muted);line-height:1.5}
+  .fstep .fns{font-family:var(--font-m);font-size:10px;color:var(--muted-2);margin-top:8px}
+  .fconn{display:flex;align-items:center;color:var(--muted-2);font-size:17px;font-family:var(--font-m)}
+  @media(max-width:760px){.fconn{transform:rotate(90deg)}.fstep{min-width:100%}}
+  .loopnote{margin-top:14px;text-align:center;font-family:var(--font-m);font-size:11px;color:var(--gold)}
+
+  /* app structure */
+  .archcard{border:1px solid var(--line);border-radius:16px;background:var(--ink-2);padding:24px;margin-bottom:8px}
+  .arch-shell{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+  @media(max-width:760px){.arch-shell{grid-template-columns:repeat(2,1fr)}}
+  .svc{border:1px solid var(--line);border-radius:9px;background:var(--panel);padding:11px 12px}
+  .svc .st{font-family:var(--font-m);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:3px}
+  .svc .sd{font-size:11.5px;color:var(--muted);line-height:1.4}
+  .stackline{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+  .stk{font-family:var(--font-m);font-size:10.5px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 10px}
+  .stk b{color:var(--text)}
+  .amod{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:15px;margin-bottom:11px}
+  .amod:last-child{margin-bottom:0}
+  .amh{display:flex;align-items:baseline;gap:8px;margin-bottom:3px}
+  .amh .n{font-family:var(--font-m);font-size:11px;font-weight:600;flex-shrink:0}
+  .p1 .amh .n{color:var(--gold)}.p2 .amh .n{color:var(--blue)}.p3 .amh .n{color:var(--green)}
+  .amh h4{font-size:14.5px}
+  .amod .app{font-family:var(--font-m);font-size:10px;color:var(--muted-2);margin:1px 0 10px}
+  .asub{margin-top:9px}
+  .asub .al{font-family:var(--font-m);font-size:8.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted-2);margin-bottom:5px}
+  .achips{display:flex;flex-wrap:wrap;gap:5px}
+  .ac{font-family:var(--font-m);font-size:10px;color:var(--muted);background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:3px 8px}
+  .ac.scr{color:#C9D6E8;border-color:var(--blue-dim)}
+  .ac.role{color:var(--gold);border-color:var(--gold-dim)}
+
+  /* example */
+  .demo-note{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-m);font-size:10.5px;color:var(--gold);border:1px solid var(--gold-dim);border-radius:20px;padding:6px 14px;background:rgba(227,174,85,.05)}
+  .xhead{border:1px solid var(--line);border-radius:16px;background:radial-gradient(120% 160% at 0% 0%,rgba(90,182,219,.08),transparent 55%),var(--ink-2);padding:24px;margin:20px 0 8px}
+  .xhead .xtag{font-family:var(--font-m);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue)}
+  .xhead h3{font-size:clamp(19px,2.6vw,26px);margin:8px 0 4px}
+  .xhead .xsub{color:var(--muted);font-size:13.5px}
+  .xmeta{display:flex;flex-wrap:wrap;gap:22px;margin-top:16px}
+  .xm{border-left:2px solid var(--blue-dim);padding-left:12px}
+  .xm .n{font-family:var(--font-d);font-size:18px;font-weight:600}
+  .xm .l{font-family:var(--font-m);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-2);margin-top:2px}
+  .xstatus{align-self:center;font-family:var(--font-m);font-size:11px;color:var(--green);border:1px solid var(--green-dim);border-radius:20px;padding:6px 13px}
+  .xgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-top:8px}
+  @media(max-width:940px){.xgrid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.xgrid{grid-template-columns:1fr}}
+  .xcard{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:16px;position:relative;overflow:hidden;transition:transform .3s,border-color .3s}
+  .xcard::before{content:"";position:absolute;top:0;left:0;right:0;height:2px}
+  .xcard.d::before{background:var(--gold)}.xcard.o::before{background:var(--blue)}.xcard.g::before{background:var(--green)}
+  .xcard:hover{transform:translateY(-3px)}
+  .xcard .xk{font-family:var(--font-m);font-size:9px;letter-spacing:.08em;color:var(--muted-2);text-transform:uppercase}
+  .xcard .xf{font-size:12.5px;color:var(--text);font-weight:500;margin:3px 0 12px;font-family:var(--font-d)}
+  .xbig{display:flex;align-items:baseline;gap:6px}
+  .xbig .v{font-family:var(--font-d);font-size:27px;font-weight:600}
+  .xcard.d .xbig .v{color:var(--gold)}.xcard.o .xbig .v{color:var(--blue)}.xcard.g .xbig .v{color:var(--green)}
+  .xbig .u{font-family:var(--font-m);font-size:11px;color:var(--muted-2)}
+  .xsubv{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5}
+  .xsubv .up{color:var(--green)}.xsubv .warn{color:var(--gold)}
+  .roadmap{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px}
+  @media(max-width:800px){.roadmap{grid-template-columns:1fr}}
+  .rm{border:1px solid var(--line);border-radius:13px;background:var(--ink-2);padding:20px;position:relative}
+  .rm .rmp{font-family:var(--font-m);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+  .rm h4{font-size:16px;margin:8px 0 4px}
+  .rm .rt{font-family:var(--font-m);font-size:10px;color:var(--muted-2);margin-bottom:10px}
+  .rm ul{list-style:none}
+  .rm li{font-size:12.3px;color:var(--muted);padding-left:15px;position:relative;line-height:1.6}
+  .rm li::before{content:"▸";position:absolute;left:0;color:var(--blue);font-size:10px;top:3px}
+
+  /* lifecycle phases */
+  .phase-head{display:flex;align-items:flex-start;gap:20px;margin-bottom:24px;flex-wrap:wrap}
+  .phase-code{font-family:var(--font-d);font-weight:700;font-size:clamp(36px,6vw,60px);line-height:.9;color:transparent;-webkit-text-stroke:1.3px var(--gold-dim);flex-shrink:0}
+  .phase-meta{flex:1;min-width:250px}
+  .phase-meta .tag{font-family:var(--font-m);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--blue)}
+  .phase-meta h3{font-size:clamp(21px,3vw,30px);margin:8px 0 9px}.phase-meta .verb{color:var(--gold)}
+  .phase-meta p{color:var(--muted);max-width:62ch;font-size:14px}
+  .mods{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:720px){.mods{grid-template-columns:1fr}}
+  .mod{background:linear-gradient(180deg,var(--panel),var(--ink-2));border:1px solid var(--line);border-radius:12px;padding:18px;transition:transform .3s,border-color .3s;position:relative;overflow:hidden}
+  .mod:hover{transform:translateY(-3px);border-color:var(--blue-dim)}
+  .mod.wide{grid-column:1/-1}.mod.flag{border-color:var(--gold-dim)}
+  .mod .idx{font-family:var(--font-m);font-size:10px;color:var(--muted-2)}
+  .mod h4{font-size:16px;margin:6px 0 3px}.mod .en{font-family:var(--font-m);font-size:10px;color:var(--blue);margin-bottom:9px}
+  .mod p{font-size:12.8px;color:var(--muted);line-height:1.55}
+  .phase-wrap{margin-bottom:32px}
+
+  .foundation{border:1px solid var(--blue-dim);border-radius:16px;padding:26px;background:radial-gradient(120% 160% at 50% 0%,rgba(90,182,219,.1),transparent 60%),var(--ink-2);position:relative}
+  .foundation .flabel{position:absolute;top:-11px;left:22px;background:var(--ink);border:1px solid var(--blue-dim);border-radius:20px;padding:3px 13px;font-family:var(--font-m);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue)}
+  .fnd-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:24px;align-items:center}
+  @media(max-width:800px){.fnd-grid{grid-template-columns:1fr;gap:18px}}
+  .foundation h3{font-size:20px;margin-bottom:9px}.foundation h3 .b{color:var(--blue)}
+  .foundation .en{font-family:var(--font-d);font-style:italic;font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:9px}
+  .foundation .th{font-size:12.8px;color:var(--muted);line-height:1.6}.foundation .th b{color:var(--text)}
+  .caps{display:flex;flex-wrap:wrap;gap:7px}
+  .cap{font-family:var(--font-m);font-size:10.5px;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:6px 11px}
+  .cap.hl{border-color:var(--gold-dim);color:var(--gold)}
+  .obline{margin-top:18px}.ct{font-family:var(--font-m);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted-2);margin-bottom:8px}
+  .objs{display:flex;flex-wrap:wrap;gap:7px}
+  .obj{font-family:var(--font-m);font-size:10.5px;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:6px 11px}
+  .obj.core{border-color:var(--blue-dim);color:var(--blue)}
+
+  footer{border-top:1px solid var(--line-soft);padding:30px 0 44px;margin-top:12px}
+  .foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+  .foot .mono{font-size:11px;color:var(--muted-2);letter-spacing:.06em}
+  .foot .principle{font-family:var(--font-d);font-size:14px;color:var(--muted);max-width:56ch}
+  .foot .principle b1{color:var(--gold)}.foot .principle b2{color:var(--blue)}.foot .principle b3{color:var(--green)}
+
+  .overlay{position:fixed;inset:0;background:rgba(5,9,15,.74);backdrop-filter:blur(6px);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:40px 18px;overflow-y:auto}
+  .overlay.open{display:flex}
+  .modal{max-width:780px;width:100%;background:linear-gradient(180deg,var(--ink-2),var(--ink));border:1px solid var(--line);border-radius:18px;position:relative;overflow:hidden;box-shadow:0 50px 90px -30px #000;animation:pop .3s cubic-bezier(.2,.7,.2,1)}
+  @keyframes pop{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+  .m-accent{height:3px}.m-accent.d{background:linear-gradient(90deg,var(--gold),transparent)}.m-accent.o{background:linear-gradient(90deg,var(--blue),transparent)}.m-accent.g{background:linear-gradient(90deg,var(--green),transparent)}
+  .m-top{padding:22px 26px 18px;border-bottom:1px solid var(--line-soft);position:relative}
+  .m-badge{font-family:var(--font-m);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:4px 11px;border-radius:20px;display:inline-block}
+  .m-badge.d{color:var(--gold);border:1px solid var(--gold-dim)}.m-badge.o{color:var(--blue);border:1px solid var(--blue-dim)}.m-badge.g{color:var(--green);border:1px solid var(--green-dim)}
+  .m-top h3{font-size:22px;margin:11px 0 3px}.m-top .men{font-family:var(--font-m);font-size:11px;color:var(--muted-2)}
+  .m-close{position:absolute;top:18px;right:18px;width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+  .m-close:hover{color:var(--text);border-color:var(--blue-dim)}
+  .m-body{padding:20px 26px 24px}.m-sec{margin-bottom:18px}
+  .m-lbl{font-family:var(--font-m);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted-2);margin-bottom:7px}
+  .m-mission{font-size:13.8px;color:var(--text);line-height:1.6}
+  .m-resp{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:6px 18px}
+  @media(max-width:560px){.m-resp{grid-template-columns:1fr}}
+  .m-resp li{font-size:12.5px;color:var(--muted);padding-left:15px;position:relative;line-height:1.5}
+  .m-resp li::before{content:"▸";position:absolute;left:0;color:var(--blue);font-size:10px;top:2px}
+  .flow3{display:flex;align-items:stretch;gap:8px}@media(max-width:620px){.flow3{flex-direction:column}}
+  .fbox{flex:1;border:1px solid var(--line);border-radius:11px;padding:12px 13px;background:var(--panel);min-width:0}
+  .fbox.d{border-color:var(--gold-dim)}.fbox.o{border-color:var(--blue-dim)}.fbox.g{border-color:var(--green-dim)}
+  .fbox .fbk{font-family:var(--font-m);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-2);margin-bottom:6px}
+  .fbox .fbt{font-size:12.3px;color:var(--text);line-height:1.4;font-weight:500}
+  .fbox .fba{font-family:var(--font-m);font-size:9.5px;color:var(--muted);margin-top:5px;line-height:1.4}
+  .fbox.mid .fbt{font-family:var(--font-d)}.fbox.mid.d .fbt{color:var(--gold)}.fbox.mid.o .fbt{color:var(--blue)}.fbox.mid.g .fbt{color:var(--green)}
+  .farr{display:flex;align-items:center;justify-content:center;color:var(--muted-2);font-size:15px;flex-shrink:0}
+  @media(max-width:620px){.farr{transform:rotate(90deg);padding:2px 0}}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{font-family:var(--font-m);font-size:10.5px;color:var(--muted);background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:5px 10px}
+  .chip.k{color:var(--gold);border-color:var(--gold-dim)}
+  .m-nav{display:flex;align-items:center;justify-content:space-between;padding:15px 26px;border-top:1px solid var(--line-soft);background:var(--ink-2)}
+  .m-nav button{font-family:var(--font-m);font-size:11px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 14px;cursor:pointer;transition:.15s;text-transform:uppercase}
+  .m-nav button:hover:not(:disabled){color:var(--text);border-color:var(--blue-dim)}
+  .m-nav button:disabled{opacity:.35;cursor:not-allowed}
+  .m-nav .pos{font-family:var(--font-m);font-size:10px;color:var(--muted-2)}
+  @media (prefers-reduced-motion:reduce){.pulse-g{animation:none}.modal,.view.active{animation:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap row">
+    <div class="brand" onclick="showView('center')"><span class="dot"></span><b>DEMAND&nbsp;SATISFACTION&nbsp;CENTER</b></div>
+    <nav class="navlinks">
+      <button data-v="center" onclick="showView('center')">Demand Satisfaction</button>
+      <button data-v="appstruct" onclick="showView('appstruct')">App Structure</button>
+      <button data-v="example" onclick="showView('example')">Example Project</button>
+      <button data-v="lifecycle" onclick="showView('lifecycle')">EPC Lifecycle</button>
+      <button data-v="tech" onclick="showView('tech')">Technology</button>
+    </nav>
+  </div>
+</div>
+
+<!-- VIEW 1: DEMAND SATISFACTION -->
+<div class="view" id="view-center">
+  <header class="hero wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow">Demand Satisfaction Center · Customer Success Engine</span>
+        <h1>ส่งมอบ<span class="g">ความสำเร็จ</span><br>ให้ลูกค้า<span class="en">3 Pillars · 8 Functions · 1 Platform</span></h1>
+        <div class="lead">
+          <div class="mi">"Deliver Customer Success by transforming every customer commitment into measurable business value, operational excellence, and recurring lifecycle partnership."</div>
+          <div class="th">คลิก <b>node บนวงแหวน</b> หรือ <b>การ์ดฟังก์ชัน</b> เพื่อดูรายละเอียดและ flow ของแต่ละฟังก์ชัน</div>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><div class="n">3</div><div class="l">Value Pillars</div></div>
+          <div class="kpi"><div class="n">8</div><div class="l">Functions</div></div>
+          <div class="kpi"><div class="n">↺</div><div class="l">Closed Loop</div></div>
+        </div>
+      </div>
+      <div class="ring-box">
+        <svg class="ring-svg" viewBox="0 0 300 300" role="img" aria-label="Customer Success ring">
+          <circle class="ring-track" cx="150" cy="150" r="118"/>
+          <path class="arc d" d="M150,32 A118,118 0 0,0 46.8,206"/>
+          <path class="arc o" d="M53,213 A118,118 0 0,0 247,213"/>
+          <path class="arc g" d="M253.2,206 A118,118 0 0,0 150,32"/>
+          <path class="feedback" d="M150,20 A130,130 0 0,0 138,20"/>
+          <g><circle class="node d" cx="106" cy="41" r="3"/><circle class="nhit" cx="106" cy="41" r="11" onclick="openFn('9.1')"/></g>
+          <g><circle class="node d" cx="48" cy="91" r="3"/><circle class="nhit" cx="48" cy="91" r="11" onclick="openFn('9.2')"/></g>
+          <g><circle class="node d" cx="34" cy="171" r="3"/><circle class="nhit" cx="34" cy="171" r="11" onclick="openFn('9.7')"/></g>
+          <g><circle class="node o" cx="77" cy="243" r="3"/><circle class="nhit" cx="77" cy="243" r="11" onclick="openFn('9.4')"/></g>
+          <g><circle class="node o" cx="150" cy="268" r="3"/><circle class="nhit" cx="150" cy="268" r="11" onclick="openFn('9.8')"/></g>
+          <g><circle class="node o" cx="223" cy="243" r="3"/><circle class="nhit" cx="223" cy="243" r="11" onclick="openFn('9.6')"/></g>
+          <g><circle class="node g" cx="261" cy="190" r="3"/><circle class="nhit" cx="261" cy="190" r="11" onclick="openFn('9.3')"/></g>
+          <g><circle class="node g" cx="252" cy="91" r="3"/><circle class="nhit" cx="252" cy="91" r="11" onclick="openFn('9.5')"/></g>
+          <g class="pulse-g"><circle class="pulse" cx="150" cy="32" r="5.2"/></g>
+          <text class="ring-lbl" x="70" y="66" text-anchor="middle" style="fill:var(--gold)">DELIVER</text>
+          <text class="ring-num" x="70" y="78" text-anchor="middle">group 01</text>
+          <text class="ring-lbl" x="150" y="288" text-anchor="middle" style="fill:var(--blue)">OPERATE</text>
+          <text class="ring-num" x="150" y="300" text-anchor="middle">group 02</text>
+          <text class="ring-lbl" x="232" y="66" text-anchor="middle" style="fill:var(--green)">GROW</text>
+          <text class="ring-num" x="232" y="78" text-anchor="middle">group 03</text>
+          <text class="ring-c-t" x="150" y="147" text-anchor="middle" font-size="17">CUSTOMER</text>
+          <text class="ring-c-t" x="150" y="167" text-anchor="middle" font-size="17">SUCCESS</text>
+          <text class="ring-c-s" x="150" y="186" text-anchor="middle">คลิก node เพื่อดู flow</text>
+        </svg>
+      </div>
+    </div>
+  </header>
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow" style="justify-content:center;display:inline-flex">Operating Model</span>
+        <h2>3 เสาหลัก · 8 ฟังก์ชัน</h2>
+        <p>แกนจัดกลุ่ม = 3 คำมั่นสัญญาใน Mission · <b>คลิกการ์ดเพื่อดูรายละเอียดและ flow</b></p>
+      </div>
+      <div class="pillars" id="pillarsGrid"></div>
+    </div>
+  </section>
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head"><span class="eyebrow" style="justify-content:center;display:inline-flex">Closed-Loop Workflow</span><h2>คำมั่นสัญญาไหลผ่านวงจร</h2></div>
+      <div class="flow">
+        <div class="fstep s1"><div class="fk">Group 01 · Deliver</div><h4>ส่งมอบและพิสูจน์คุณค่า</h4><p>Plan → กำกับ → ตรวจรับ<br><span style="color:var(--gold)">→ Acceptance + Value Baseline</span></p><div class="fns">9.1 · 9.2 · 9.7</div></div>
+        <div class="fconn">→</div>
+        <div class="fstep s2"><div class="fk">Group 02 · Operate</div><h4>ดำเนินการต่อเนื่อง</h4><p>SLA → เฝ้า 24×7 → predictive<br><span style="color:var(--blue)">→ Health + Value Delivered</span></p><div class="fns">9.4 · 9.8 · 9.6</div></div>
+        <div class="fconn">→</div>
+        <div class="fstep s3"><div class="fk">Group 03 · Grow</div><h4>รักษาและต่อยอด</h4><p>QBR → ต่อสัญญา/ขยาย<br><span style="color:var(--green)">→ New Demand</span></p><div class="fns">9.3 · 9.5</div></div>
+      </div>
+      <div class="loopnote">↺ New Demand วนกลับเข้า Group 01 · PMO</div>
+    </div>
+  </section>
+</div>
+
+<!-- VIEW 2: APP STRUCTURE -->
+<div class="view" id="view-appstruct">
+  <section class="sec" style="border-top:none">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow" style="justify-content:center;display:inline-flex">Web Application Blueprint</span>
+        <h2>โครงสร้าง Web Application สำหรับองค์กร</h2>
+        <p>แต่ละฟังก์ชัน = 1 โมดูลแอปที่มีหน้าจอ · ฟีเจอร์ · ผู้ใช้ · data ของตัวเอง — ทุกโมดูลใช้ <b>shared services + data เดียวกัน</b> บน Technology Platform</p>
+      </div>
+      <div class="archcard">
+        <span class="eyebrow" style="display:inline-flex">Application Shell · Shared Services</span>
+        <div class="arch-shell">
+          <div class="svc"><div class="st">Auth</div><div class="sd">SSO + Role-based access (RBAC) ต่อฟังก์ชัน/โครงการ</div></div>
+          <div class="svc"><div class="st">Home / Search</div><div class="sd">Dashboard รวม + Global search ข้ามโมดูล</div></div>
+          <div class="svc"><div class="st">Notifications</div><div class="sd">แจ้งเตือน event-driven + task inbox</div></div>
+          <div class="svc"><div class="st">Reporting / BI</div><div class="sd">รายงาน · export · analytics ข้ามฟังก์ชัน</div></div>
+          <div class="svc"><div class="st">Audit Log</div><div class="sd">บันทึกทุก action เพื่อ compliance</div></div>
+          <div class="svc"><div class="st">Integration</div><div class="sd">API เชื่อม ERP · SCADA · IoT · Accounting</div></div>
+          <div class="svc"><div class="st">Data & AI</div><div class="sd">Data model กลาง + AI (health, predictive)</div></div>
+          <div class="svc"><div class="st">Admin</div><div class="sd">ตั้งค่า master data · users · workflow</div></div>
+        </div>
+        <div class="stackline">
+          <span class="stk">แนะนำ stack: <b>React</b> (front-end)</span>
+          <span class="stk"><b>REST/GraphQL API</b> + RBAC</span>
+          <span class="stk"><b>PostgreSQL</b> + time-series (telemetry)</span>
+          <span class="stk"><b>Event bus</b> (triggers)</span>
+          <span class="stk"><b>AI service</b> (health/RUL)</span>
+        </div>
+      </div>
+      <div class="pillars" id="appGrid" style="margin-top:26px"></div>
+    </div>
+  </section>
+</div>
+
+<!-- VIEW 3: EXAMPLE PROJECT -->
+<div class="view" id="view-example">
+  <section class="sec" style="border-top:none">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow" style="justify-content:center;display:inline-flex">Live Example · ตัวอย่างการใช้งานจริง</span>
+        <h2>โครงการตัวอย่างไหลผ่านทั้ง 8 ฟังก์ชัน</h2>
+        <p><span class="demo-note">◇ ข้อมูลตัวอย่าง (demo) เพื่อให้เห็นภาพจริง — ปรับเป็นข้อมูลองค์กรได้</span></p>
+      </div>
+      <div class="xhead">
+        <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start">
+          <div style="flex:1;min-width:260px">
+            <div class="xtag">Customer · ลูกค้า</div>
+            <h3>บริษัท สยามอาหารสำเร็จรูป จำกัด</h3>
+            <div class="xsub">EPC — Solar Rooftop 2.5 MWp + BESS 1 MWh + EMS · โรงงานสมุทรสาคร</div>
+          </div>
+          <div class="xstatus">● ส่งมอบแล้ว · อยู่ในช่วง O&amp;M</div>
+        </div>
+        <div class="xmeta">
+          <div class="xm"><div class="n">฿78 M</div><div class="l">Contract Value</div></div>
+          <div class="xm"><div class="n">ม.ค.–ก.ย. 26</div><div class="l">Delivery</div></div>
+          <div class="xm"><div class="n">2.5 MWp</div><div class="l">Solar + 1MWh BESS</div></div>
+          <div class="xm"><div class="n">Net-Zero</div><div class="l">Program</div></div>
+        </div>
+      </div>
+      <div class="xgrid">
+        <div class="xcard d"><div class="xk">9.1 PMO</div><div class="xf">Delivery</div><div class="xbig"><span class="v">100</span><span class="u">%</span></div><div class="xsubv">CPI <span class="up">1.03</span> · SPI 1.00<br>งบ ฿78M → ใช้จริง ฿75.6M</div></div>
+        <div class="xcard d"><div class="xk">9.2 Program</div><div class="xf">Transformation</div><div class="xbig"><span class="v">-18</span><span class="u">% CO₂</span></div><div class="xsubv">ส่วนหนึ่งของโปรแกรม Net-Zero<br>ลด Scope 2 emission</div></div>
+        <div class="xcard d"><div class="xk">9.7 Quality &amp; Value</div><div class="xf">Acceptance</div><div class="xbig"><span class="v">฿1.1</span><span class="u">M/ด.</span></div><div class="xsubv">Acceptance ผ่าน 100% · PR 0.82<br>ประหยัดค่าไฟ <span class="up">เกินเป้า (฿1.0M)</span></div></div>
+        <div class="xcard o"><div class="xk">9.4 Service Delivery</div><div class="xf">SLA Uptime</div><div class="xbig"><span class="v">99.6</span><span class="u">%</span></div><div class="xsubv">เป้า 99.5% <span class="up">· ผ่าน</span><br>งานเปิด 2 · PM ครบตามรอบ</div></div>
+        <div class="xcard o"><div class="xk">9.8 Ops Center 24×7</div><div class="xf">Alerts วันนี้</div><div class="xbig"><span class="v">1</span><span class="u">alert</span></div><div class="xsubv"><span class="warn">Inverter #4 อุณหภูมิสูง</span><br>→ auto Work Order ให้ 9.4</div></div>
+        <div class="xcard o"><div class="xk">9.6 Asset Health</div><div class="xf">Health Score</div><div class="xbig"><span class="v">93</span><span class="u">/100</span></div><div class="xsubv"><span class="warn">Inverter #4 RUL ~7 เดือน</span><br>แนะเปลี่ยน Q3 (predictive)</div></div>
+        <div class="xcard g"><div class="xk">9.3 Customer Success</div><div class="xf">NPS</div><div class="xbig"><span class="v">64</span><span class="u">promoter</span></div><div class="xsubv">Adoption EMS 85% · QBR อีก 15 วัน<br><span class="up">Expansion: เฟส 2 Solar Carport 0.8 MWp</span></div></div>
+        <div class="xcard g"><div class="xk">9.5 Subscription</div><div class="xf">Recurring</div><div class="xbig"><span class="v">฿42</span><span class="u">K/ด.</span></div><div class="xsubv">Monitoring + O&amp;M · ARR ~฿0.5M<br><span class="warn">Renewal ใน 88 วัน</span></div></div>
+      </div>
+      <div class="archcard" style="margin-top:22px;border-color:var(--gold-dim)">
+        <span class="eyebrow" style="display:inline-flex;color:var(--gold)">Loop Insight</span>
+        <p style="color:var(--muted);font-size:13.5px;margin-top:10px;line-height:1.6"><b style="color:var(--text)">Expansion เฟส 2 (Solar Carport)</b> ที่ 9.3 Customer Success ค้นพบ จะถูกแปลงเป็นสัญญาใหม่ที่ 9.5 แล้ว <b style="color:var(--gold)">ป้อน demand กลับเข้า 9.1 PMO</b> เป็นโครงการรอบใหม่ — ยิ่งลูกค้าอยู่นาน ยิ่งสะสมข้อมูลสุขภาพและมูลค่า ทำให้เสนอขยายได้แม่นขึ้นเรื่อย ๆ</p>
+      </div>
+      <div class="sec-head" style="margin-top:44px;margin-bottom:18px">
+        <span class="eyebrow" style="justify-content:center;display:inline-flex">ต่อยอดในอนาคต</span>
+        <h2 style="font-size:clamp(20px,2.8vw,28px)">Roadmap การพัฒนา Web App</h2>
+      </div>
+      <div class="roadmap">
+        <div class="rm"><div class="rmp">Phase 1 · MVP</div><h4>Deliver Core</h4><div class="rt">0–3 เดือน</div><ul><li>Project Console (9.1)</li><li>Quality &amp; Value (9.7)</li><li>Service Desk (9.4)</li><li>Data model + RBAC + Auth</li></ul></div>
+        <div class="rm"><div class="rmp">Phase 2 · Operate</div><h4>Real-time &amp; AI</h4><div class="rt">3–6 เดือน</div><ul><li>Ops Center 24×7 (9.8)</li><li>Asset Health + AI (9.6)</li><li>Customer 360 (9.3)</li><li>เชื่อม SCADA / IoT</li></ul></div>
+        <div class="rm"><div class="rmp">Phase 3 · Grow</div><h4>Recurring &amp; Scale</h4><div class="rt">6–12 เดือน</div><ul><li>Subscription &amp; Billing (9.5)</li><li>Program Cockpit (9.2)</li><li>Predictive + Portfolio BI</li><li>Multi-project / multi-customer</li></ul></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- VIEW: LIFECYCLE -->
+<div class="view" id="view-lifecycle">
+  <section class="sec" style="border-top:none">
+    <div class="wrap">
+      <div class="sec-head"><span class="eyebrow" style="justify-content:center;display:inline-flex">EPC Lifecycle</span><h2>Contracting → Project Management → Service Management</h2><p>สามเฟสที่เป็น <b>วงจรหมุนกลับ</b> โดยมี Demand Satisfaction เป็นตัววัดร้อยผ่านทุกเฟส</p></div>
+      <div class="phase-wrap">
+        <div class="phase-head"><div class="phase-code">01</div><div class="phase-meta"><span class="tag">Contracting</span><h3>นิยาม Demand — <span class="verb">Define</span></h3><p>ความต้องการถูกจับเป็นสัญญาที่วัดผลได้ ทุก scope และ warranty คือ baseline ของทั้งแพลตฟอร์ม</p></div></div>
+        <div class="mods">
+          <div class="mod"><div class="idx">1.1</div><h4>สัญญาและข้อผูกพัน</h4><div class="en">Contract Management</div><p>ศูนย์กลางสัญญาแบบ digital แปลงเงื่อนไข ค่าปรับ การจ่ายเงิน เป็นข้อมูลที่ระบบติดตามได้</p></div>
+          <div class="mod"><div class="idx">1.2</div><h4>ระบบวิศวกรรมฉบับสมบูรณ์</h4><div class="en">Final Engineering System</div><p>as-built + design freeze + BOM/BOQ = single source of truth</p></div>
+          <div class="mod"><div class="idx">1.3</div><h4>ขอบเขตงาน</h4><div class="en">Scope of Work</div><p>WBS + deliverables วัดผลได้ นิยามปริมาณ demand ที่ต้องตอบสนอง 100%</p></div>
+          <div class="mod"><div class="idx">1.4</div><h4>ระยะเวลารับประกัน</h4><div class="en">Warranty Period</div><p>ผูก warranty กับ asset = demand ในอนาคตของเฟสบริการ</p></div>
+        </div>
+      </div>
+      <div class="phase-wrap">
+        <div class="phase-head"><div class="phase-code">02</div><div class="phase-meta"><span class="tag">Project Management</span><h3>ตอบสนอง Demand — <span class="verb">Satisfy</span></h3><p>จับคู่ demand กับ supply จริงแบบเรียลไทม์ตาม S-curve ทุกความล่าช้าถูกมองเห็นก่อนกลายเป็นค่าปรับ</p></div></div>
+        <div class="mods">
+          <div class="mod wide"><div class="idx">2.1 · core</div><h4>Demand Satisfaction แบบ Live</h4><div class="en">Live Demand Satisfaction Index</div><p>ดัชนีเรียลไทม์ วัดว่า demand ตาม S-curve ถูก supply ตอบสนองกี่ % จุดที่เกินติดไฟแดงพร้อม root cause</p></div>
+          <div class="mod"><div class="idx">2.2</div><h4>Milestones &amp; ตารางงาน</h4><div class="en">Milestones & Schedule</div><p>Gantt / critical path เชื่อม demand จริง คำนวณผลกระทบลูกโซ่ทันที</p></div>
+          <div class="mod"><div class="idx">2.3</div><h4>Cost &amp; Cash Flow</h4><div class="en">Cost & Cash Flow Forecast</div><p>EVM · CPI/SPI · พยากรณ์กระแสเงินสด</p></div>
+          <div class="mod"><div class="idx">2.4</div><h4>ส่งมอบและติดตั้ง</h4><div class="en">Delivery Execution</div><p>procurement → logistics → หน้างาน ติดตาม PR/PO การรับของ การติดตั้ง</p></div>
+          <div class="mod"><div class="idx">2.5</div><h4>ส่งต่อสู่งานบริการ</h4><div class="en">Service Transition</div><p>ส่งมอบ as-built คู่มือ อะไหล่ warranty asset registry ให้ทีมบริการไร้รอยต่อ</p></div>
+        </div>
+      </div>
+      <div class="phase-wrap">
+        <div class="phase-head"><div class="phase-code">03</div><div class="phase-meta"><span class="tag">Service Management</span><h3>รักษาและต่อยอด — <span class="verb">Sustain &amp; Grow</span></h3><p>เปลี่ยนงานซ่อมบำรุงจาก cost center เป็น recurring-revenue engine แล้วปิดวงจรด้วย demand รอบใหม่</p></div></div>
+        <div class="mods">
+          <div class="mod"><div class="idx">3.1</div><h4>ใบสั่งงาน &amp; รับประกัน</h4><div class="en">Work Orders & Warranty</div><p>ใบสั่งงานผูกกับ asset และ warranty clock แยกงานในประกันกับงานคิดเงินได้</p></div>
+          <div class="mod"><div class="idx">3.2</div><h4>คะแนนสุขภาพสินทรัพย์</h4><div class="en">Asset Health Score</div><p>ประมวลประวัติซ่อม downtime sensor เป็นตัวเลขสุขภาพ</p></div>
+          <div class="mod wide"><div class="idx">3.3 · core</div><h4>O&amp;M SLA + AI Predictive</h4><div class="en">Preventive / Predictive + AI</div><p>Preventive + Monitoring + Predictive AI ทำนายว่าอุปกรณ์ไหนจะเสียก่อนเสียจริง "เข้าก่อนพัง" พร้อม SLA การันตี uptime</p></div>
+          <div class="mod wide flag"><div class="idx">3.4 · loop-back</div><h4>ต่อสัญญาและขยายผล</h4><div class="en">Renew & Expand</div><p>ใช้ข้อมูลเสนอ renew/expand แบบมีหลักฐาน แปลงงานครั้งเดียวเป็นรายได้ต่อเนื่อง ป้อน demand ใหม่กลับเข้า Contracting</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- VIEW: TECH -->
+<div class="view" id="view-tech">
+  <section class="sec" style="border-top:none">
+    <div class="wrap">
+      <div class="sec-head"><span class="eyebrow" style="justify-content:center;display:inline-flex">Foundation Layer</span><h2>Technology Platform</h2><p>ฐาน horizontal ที่ทั้ง 3 เฟส และ 8 ฟังก์ชันยืนอยู่ร่วมกัน — <b>object เดียวส่งต่อกันทั้งวงจร</b></p></div>
+      <div class="foundation">
+        <span class="flabel">Engineering &amp; Operation Technology</span>
+        <div class="fnd-grid">
+          <div>
+            <h3>Intelligent Engineering &amp; Operation <span class="b">Technology</span></h3>
+            <div class="en">"Develop intelligent engineering and operation technologies that enable customers to design, simulate, implement, operate, optimize, and continuously improve their electrical and energy systems throughout the entire asset lifecycle with the lowest Total Lifecycle Cost."</div>
+            <div class="th">พัฒนาเทคโนโลยีด้านวิศวกรรมและการปฏิบัติการอัจฉริยะ เพื่อให้ลูกค้าสามารถออกแบบ จำลอง ติดตั้ง ควบคุม เพิ่มประสิทธิภาพ และบริหารระบบไฟฟ้าและพลังงานตลอดวงจรชีวิตสินทรัพย์ ด้วยต้นทุนรวมตลอดอายุการใช้งานต่ำที่สุด — <b>เป็นฐานข้อมูล/AI ที่ทั้ง 8 ฟังก์ชันใช้ร่วมกัน</b></div>
+          </div>
+          <div class="caps">
+            <span class="cap">Design</span><span class="cap">Simulate</span><span class="cap">Implement</span>
+            <span class="cap">Operate</span><span class="cap">Optimize</span><span class="cap">Improve</span>
+            <span class="cap hl">Lowest Total Lifecycle Cost</span>
+          </div>
+        </div>
+        <div class="obline">
+          <div class="ct">Shared Data Objects — ตัวเชื่อม workflow</div>
+          <div class="objs">
+            <span class="obj core">Contract</span><span class="obj">Project & Schedule</span><span class="obj core">Asset Registry</span>
+            <span class="obj">Work Order</span><span class="obj">Telemetry</span><span class="obj core">Health Score</span>
+            <span class="obj core">Value Record</span><span class="obj">Subscription</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap foot">
+    <div class="principle">แปลง <b1>คำมั่นสัญญา</b1> → <b2>มูลค่าที่วัดได้</b2> → <b3>ความสัมพันธ์ที่ต่อเนื่อง</b3></div>
+    <div class="mono">DEMAND SATISFACTION · WEB APP PLATFORM · 3 PILLARS · 8 FUNCTIONS</div>
+  </div>
+</footer>
+
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeFn()"><div class="modal" role="dialog" aria-modal="true" id="modal"></div></div>
+
+<script>
+const FN={
+ '9.1':{grp:'d',grpName:'Group 01 · Deliver',no:'9.1',th:'Project Management Office',en:'PMO',mission:'สร้าง บริหาร และกำกับโครงการให้ส่งมอบได้ตรงเวลา อยู่ภายใต้งบประมาณ มีคุณภาพ ปลอดภัย และสร้างคุณค่าทางธุรกิจสูงสุดให้แก่ลูกค้า',resp:['Project governance & gate review','WBS · schedule · baseline','จัดสรรทรัพยากรข้าม portfolio','Risk & issue management','ติดตาม S-curve / EVM','รายงานความคืบหน้าต่อลูกค้า'],fromT:'Customer Commitment',fromA:'Contract · SoW · KPI Target · Warranty',toT:'Delivery Baseline + Progress',toA:'→ 9.7 Acceptance · 9.2 Program',kpis:['On-time %','CPI','SPI','Gate pass rate'],data:['Contract','Project & Schedule','EVM']},
+ '9.2':{grp:'d',grpName:'Group 01 · Deliver',no:'9.2',th:'Program & Transformation Office',en:'Program & Transformation',mission:'ขับเคลื่อนโครงการเปลี่ยนผ่านองค์กร (Transformation) เพื่อเร่งการเปลี่ยนผ่านด้าน Digital, Energy และ Sustainability ให้เกิดผลลัพธ์ทางธุรกิจอย่างเป็นรูปธรรม',resp:['Program governance','จัดหลายโครงการเข้าหา KPI เดียว','Benefits realization','Transformation roadmap','Digital · Energy · Sustainability'],fromT:'Strategic Objective',fromA:'เป้ากลยุทธ์ + ข้อมูลโครงการ 9.1',toT:'Program KPI Alignment',toA:'→ ลำดับความสำคัญ 9.1 · โอกาส 9.3',kpis:['Benefit realized','Transformation KPI','Roadmap adherence'],data:['Program','Benefit','KPI']},
+ '9.7':{grp:'d',grpName:'Group 01 · Deliver',no:'9.7',th:'Quality, Acceptance & Value Realization',en:'Quality & Value Realization',mission:'รับรองว่าทุกโซลูชันที่ส่งมอบผ่านการยอมรับของลูกค้า และสร้างผลลัพธ์ตามที่สัญญาไว้ ทั้งด้านเทคนิค การเงิน การดำเนินงาน และความยั่งยืน',resp:['QA / QC','Commissioning & acceptance','Customer sign-off','วัด value baseline','Value audit หลังส่งมอบ'],fromT:'Completed Delivery',fromA:'งานเสร็จจาก 9.1 (พร้อม commission)',toT:'Acceptance + Value Baseline',toA:'→ Handover สู่ Operate · หลักฐาน 9.3',kpis:['Acceptance pass rate','Defect density','Value vs target'],data:['Acceptance','Value Record','Asset Registry']},
+ '9.4':{grp:'o',grpName:'Group 02 · Operate',no:'9.4',th:'Service Delivery Management',en:'Service Delivery',mission:'ให้บริการที่มีคุณภาพ เชิงรุก และเชื่อถือได้ เพื่อเพิ่มความพร้อมใช้งานของระบบ ความต่อเนื่องในการดำเนินงาน และความมั่นใจของลูกค้า',resp:['SLA management','Work order execution','Preventive maintenance','ทีมช่างภาคสนาม & อะไหล่','Service reporting'],fromT:'Handover Package',fromA:'as-built · asset registry · warranty',toT:'Service Performance vs SLA',toA:'→ ข้อมูลสุขภาพ 9.6 · รายงาน 9.3',kpis:['SLA compliance %','MTTR','PM completion','First-time-fix'],data:['Work Order','SLA','Asset']},
+ '9.8':{grp:'o',grpName:'Group 02 · Operate',no:'9.8',th:'Customer Operations Center (24×7)',en:'Operations Center 24×7',mission:'ให้บริการเฝ้าระวัง วิเคราะห์ เพิ่มประสิทธิภาพ และตอบสนองเหตุการณ์ตลอด 24 ชั่วโมง เพื่อเพิ่มสมรรถนะ ความยืดหยุ่น และความต่อเนื่องทางธุรกิจของลูกค้า',resp:['Real-time monitoring (SCADA/IoT)','Anomaly detection','Incident response & dispatch','Performance optimization','เฝ้าระวัง 24×7'],fromT:'Asset Telemetry',fromA:'สัญญาณเรียลไทม์จากสินทรัพย์',toT:'Alerts + Incident + Telemetry',toA:'→ Work Order (9.4) · Health (9.6)',kpis:['Detection time','Response time','Uptime %','False-alarm rate'],data:['Telemetry','Incident','Work Order']},
+ '9.6':{grp:'o',grpName:'Group 02 · Operate',no:'9.6',th:'Asset Lifecycle Success Management',en:'Asset Lifecycle Success',mission:'เพิ่มประสิทธิภาพ ความเชื่อถือได้ และมูลค่าตลอดอายุการใช้งานของสินทรัพย์ ตั้งแต่การออกแบบจนถึงการปลดระวาง ด้วยการบริหารเชิงคาดการณ์และข้อมูล',resp:['Asset health scoring','Predictive maintenance (RUL)','TCO optimization','Lifecycle planning','Reliability engineering'],fromT:'Telemetry + History',fromA:'ข้อมูล 9.8 + ประวัติ work order 9.4',toT:'Health Score + Predictive Reco',toA:'→ predictive WO 9.4 · มูลค่า 9.3',kpis:['Health score','MTBF','RUL accuracy','TCO reduction'],data:['Health Score','Asset','Prediction']},
+ '9.3':{grp:'g',grpName:'Group 03 · Grow',no:'9.3',th:'Customer Success Management',en:'Customer Success',mission:'สร้างความสำเร็จให้ลูกค้าด้วยการผลักดันการใช้งาน การสร้างคุณค่าอย่างต่อเนื่อง ความพึงพอใจ และการเติบโตร่วมกันในระยะยาว',resp:['Adoption enablement','Quarterly Business Review','วัด NPS / CSAT','Value realization review','หาโอกาส expansion · ป้องกัน churn'],fromT:'Value + Health Data',fromA:'Value Record + Health Score จาก Operate',toT:'Value Report + Expansion Opp.',toA:'→ โอกาสต่อสัญญา/ขยาย 9.5',kpis:['NPS / CSAT','Adoption rate','Expansion pipeline','Churn rate'],data:['Customer','Value Record','Opportunity']},
+ '9.5':{grp:'g',grpName:'Group 03 · Grow',no:'9.5',th:'Subscription & Recurring Revenue Management',en:'Subscription & Recurring Revenue',mission:'สร้างรายได้ประจำอย่างยั่งยืนผ่านบริการ Subscription ที่เพิ่มคุณค่าให้ลูกค้าอย่างต่อเนื่องตลอดวงจรชีวิตของสินทรัพย์',resp:['Subscription management','Renewal ก่อนหมดอายุ','Upsell / cross-sell','Pricing & packaging','Recurring revenue ops'],fromT:'Expansion Opportunities',fromA:'โอกาส + value report จาก 9.3',toT:'Renewed / Expanded Commitment',toA:'↺ New Demand → กลับเข้า 9.1 PMO',kpis:['Renewal rate','Net Revenue Retention','MRR / ARR','Upsell rate'],data:['Subscription','Contract','Value Record']}
+};
+const ORDER=['9.1','9.2','9.7','9.4','9.8','9.6','9.3','9.5'];
+const PILLARS=[
+ {cls:'p1',k:'Pillar 01 · Deliver',h:'Measurable Business Value',thv:'ผลลัพธ์ที่วัดผลได้',p:'ส่งมอบและพิสูจน์คุณค่าที่วัดได้',fns:['9.1','9.2','9.7']},
+ {cls:'p2',k:'Pillar 02 · Operate',h:'Operational Excellence',thv:'ความเป็นเลิศในการดำเนินงาน',p:'ทำให้ระบบทำงานได้ เชื่อถือได้',fns:['9.4','9.6','9.8']},
+ {cls:'p3',k:'Pillar 03 · Grow',h:'Recurring Lifecycle Partnership',thv:'ความร่วมมือระยะยาว',p:'แปลงความพอใจเป็นรายได้ต่อเนื่อง',fns:['9.3','9.5']}
+];
+const APP={
+ '9.1':{name:'Project Console',screens:['Portfolio Dashboard','Project Detail (Gantt·S-curve)','Resource Planner','Risk Register','Gate Review'],feat:['EVM auto-calc (CPI/SPI)','Portfolio heatmap','Resource conflict alerts'],roles:['PMO Lead','Project Manager','Executive']},
+ '9.2':{name:'Program Cockpit',screens:['Program Dashboard','Transformation Roadmap','Benefits Tracker','KPI Alignment'],feat:['Multi-project rollup','Transformation KPI','Benefit realization'],roles:['Program Director','Transformation Lead']},
+ '9.7':{name:'Quality & Value Center',screens:['QA/QC Checklists','Acceptance Workflow (e-sign)','Commissioning Punchlist','Value Baseline Report'],feat:['E-signature sign-off','Defect tracking','Value baseline vs target'],roles:['QA Engineer','Commissioning Lead','ลูกค้า']},
+ '9.4':{name:'Service Desk & Work Orders',screens:['Work Order Queue','SLA Dashboard','PM Scheduler','Field Mobile App','Spare Parts'],feat:['SLA timers & escalation','Dispatch & routing','Mobile work order'],roles:['Service Manager','Field Technician','Dispatcher']},
+ '9.8':{name:'Monitoring / NOC Console',screens:['Live Monitoring Wall','Alert Inbox','Incident Manager','Telemetry Explorer'],feat:['Real-time SCADA/IoT feed','Anomaly detection','Auto-create work order'],roles:['NOC Operator','Shift Lead']},
+ '9.6':{name:'Asset Performance Hub',screens:['Asset Registry','Health Score Dashboard','Predictive Maintenance (RUL)','TCO Analyzer','Lifecycle Timeline'],feat:['AI health scoring','RUL prediction','Auto predictive WO','TCO optimization'],roles:['Reliability Engineer','Asset Manager']},
+ '9.3':{name:'Customer 360 & Success',screens:['Customer 360','Adoption/Health Dashboard','QBR Builder','Value Report','Expansion Pipeline'],feat:['Customer health score','NPS/CSAT surveys','QBR auto-report','Churn-risk alerts'],roles:['Customer Success Manager','Account Executive']},
+ '9.5':{name:'Subscription & Billing',screens:['Subscription Manager','Renewal Pipeline','Billing / Invoicing','Pricing & Packaging','Revenue Dashboard (MRR/ARR)'],feat:['Renewal alerts (T-90)','Auto renewal package','Upsell recommendation','Recurring billing'],roles:['Revenue Ops','Finance','Account Manager']}
+};
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function renderPillars(){
+  let h='';
+  PILLARS.forEach(p=>{
+    h+='<div class="pillar '+p.cls+'"><div class="pil-head"><div class="pil-k">'+p.k+'</div><h3>'+p.h+'</h3><div class="thv">'+p.thv+'</div><p>'+p.p+'</p></div>';
+    p.fns.forEach(id=>{const f=FN[id];
+      h+='<div class="fn" tabindex="0" role="button" onclick="openFn(\''+id+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openFn(\''+id+'\')}"><div class="fn-top"><span class="fn-no">'+f.no+'</span><h4>'+f.th+'</h4></div><div class="en">'+f.en+'</div><div class="ms">'+esc(f.mission)+'</div><div class="more">ดูรายละเอียด &amp; flow →</div></div>';
+    });
+    if(p.cls==='p3') h+='<div class="fn" style="border-style:dashed;background:var(--ink-2);cursor:default"><div class="fn-top"><span class="fn-no" style="color:var(--muted-2)">↺</span><h4 style="color:var(--muted)">Loop back → 9.1 PMO</h4></div><div class="ms" style="color:var(--muted-2)">Expansion จากเสา 3 ป้อน demand กลับเข้าเสา 1</div></div>';
+    h+='</div>';
+  });
+  document.getElementById('pillarsGrid').innerHTML=h;
+}
+function renderApp(){
+  let h='';
+  PILLARS.forEach(p=>{
+    h+='<div class="pillar '+p.cls+'"><div class="pil-head"><div class="pil-k">'+p.k+'</div><h3>'+p.h+'</h3><div class="thv">'+p.thv+'</div></div>';
+    p.fns.forEach(id=>{const f=FN[id],a=APP[id];
+      h+='<div class="amod"><div class="amh"><span class="n">'+f.no+'</span><h4>'+esc(a.name)+'</h4></div><div class="app">'+f.en+'</div>'
+        +'<div class="asub"><div class="al">หน้าจอ · Screens</div><div class="achips">'+a.screens.map(s=>'<span class="ac scr">'+esc(s)+'</span>').join('')+'</div></div>'
+        +'<div class="asub"><div class="al">ฟีเจอร์เด่น · Features</div><div class="achips">'+a.feat.map(s=>'<span class="ac">'+esc(s)+'</span>').join('')+'</div></div>'
+        +'<div class="asub"><div class="al">ผู้ใช้ · Roles</div><div class="achips">'+a.roles.map(s=>'<span class="ac role">'+esc(s)+'</span>').join('')+'</div></div>'
+        +'</div>';
+    });
+    h+='</div>';
+  });
+  document.getElementById('appGrid').innerHTML=h;
+}
+function openFn(id){
+  const f=FN[id],g=f.grp,idx=ORDER.indexOf(id);
+  const prev=idx>0?ORDER[idx-1]:null,next=idx<ORDER.length-1?ORDER[idx+1]:null;
+  let h='<div class="m-accent '+g+'"></div><div class="m-top"><span class="m-badge '+g+'">'+f.grpName+'</span><button class="m-close" onclick="closeFn()" aria-label="ปิด">✕</button><h3><span style="font-family:var(--font-m);font-size:15px;opacity:.7">'+f.no+'</span>&nbsp; '+f.th+'</h3><div class="men">'+f.en+'</div></div><div class="m-body">'
+   +'<div class="m-sec"><div class="m-lbl">Mission</div><div class="m-mission">'+esc(f.mission)+'</div></div>'
+   +'<div class="m-sec"><div class="m-lbl">Key Responsibilities</div><ul class="m-resp">'+f.resp.map(r=>'<li>'+esc(r)+'</li>').join('')+'</ul></div>'
+   +'<div class="m-sec"><div class="m-lbl">Flow · ตำแหน่งใน Workflow</div><div class="flow3"><div class="fbox"><div class="fbk">รับเข้า · From</div><div class="fbt">'+esc(f.fromT)+'</div><div class="fba">'+esc(f.fromA)+'</div></div><div class="farr">→</div><div class="fbox mid '+g+'"><div class="fbk">ฟังก์ชันนี้</div><div class="fbt">'+f.no+' '+f.en+'</div></div><div class="farr">→</div><div class="fbox '+g+'"><div class="fbk">ส่งออก · To</div><div class="fbt">'+esc(f.toT)+'</div><div class="fba">'+esc(f.toA)+'</div></div></div></div>'
+   +'<div class="m-sec"><div class="m-lbl">KPIs</div><div class="chips">'+f.kpis.map(k=>'<span class="chip k">'+esc(k)+'</span>').join('')+'</div></div>'
+   +'<div class="m-sec" style="margin-bottom:0"><div class="m-lbl">App Data Objects</div><div class="chips">'+f.data.map(d=>'<span class="chip">'+esc(d)+'</span>').join('')+'</div></div></div>'
+   +'<div class="m-nav"><button '+(prev?'onclick="openFn(\''+prev+'\')"':'disabled')+'>◀ ก่อนหน้า</button><span class="pos">'+(idx+1)+' / '+ORDER.length+'</span><button '+(next?'onclick="openFn(\''+next+'\')"':'disabled')+'>ถัดไป ▶</button></div>';
+  document.getElementById('modal').innerHTML=h;
+  document.getElementById('overlay').classList.add('open');document.body.classList.add('lock');
+}
+function closeFn(){document.getElementById('overlay').classList.remove('open');document.body.classList.remove('lock')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('overlay').classList.contains('open'))closeFn()});
+function showView(v){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  const el=document.getElementById('view-'+v);if(el)el.classList.add('active');
+  document.querySelectorAll('.navlinks button').forEach(b=>b.classList.toggle('active',b.dataset.v===v));
+  if(location.hash!=='#'+v)history.replaceState(null,'','#'+v);
+  window.scrollTo({top:0,behavior:'auto'});
+}
+window.addEventListener('hashchange',()=>{const v=location.hash.replace('#','')||'center';if(document.getElementById('view-'+v))showView(v)});
+renderPillars();renderApp();
+showView((location.hash.replace('#','')&&document.getElementById('view-'+location.hash.replace('#','')))?location.hash.replace('#',''):'center');
+</script>
+</body>
+</html>
